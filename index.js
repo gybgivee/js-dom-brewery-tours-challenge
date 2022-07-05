@@ -2,7 +2,8 @@
 const filterByType = document.getElementById('filter-by-type');
 //https://api.openbrewerydb.org/breweries?by_state=new_york&per_page=3;
 let state = [];
-let stateByType=[];
+let originalState = [];
+
 
 const brewType = ['micro', 'regional', 'brewpub'];
 function clearState() {
@@ -16,24 +17,26 @@ function setState(updatedState) {
     createListOfBrewery(state);
     rander();
 }
-function setStateByType(updatedState) {
-    stateByType= updatedState;
-    createListOfBrewery(stateByType);
+function setOriginalState(updatedState) {
+    originalState = updatedState;
+    console.log('originalState', originalState);
+    createListOfBrewery(originalState);
     rander();
 }
+
 function rander() {
     listenToSearhByState();
     listenToselectOnSuggestState();
-    listenToStateSubmit();
-    listenToFilterType()
-
+    listenToSubmitState();
+    listenToFilterType();
+    listenToSearhByBrewriesName();
 
 }
 function getByState(state) {
 
     console.log('getByState', state);
     //`hello world, My name is ${isBold ? '<b>Kitty Coder</b>' : 'Kitty Coder'}`;
-    fetch(`https://api.openbrewerydb.org/breweries?by_state=` + state)
+    fetch(`https://api.openbrewerydb.org/breweries?by_state=${state}`)
         .then(function (response) {
             //console.log('get response', response);
             return response.json();
@@ -46,6 +49,7 @@ function getByState(state) {
                 }
             })
             setState(filterByType);
+            setOriginalState(filterByType);
 
         });
 }
@@ -62,6 +66,7 @@ function getAllStates() {
                 }
             })
             setState(filterByType);
+            setOriginalState(filterByType);
 
         });
 }
@@ -116,7 +121,7 @@ function listenToselectOnSuggestState() {
 
     });
 }
-function listenToStateSubmit() {
+function listenToSubmitState() {
 
     const stateForm = document.getElementById("select-state-form");
 
@@ -124,8 +129,9 @@ function listenToStateSubmit() {
         event.preventDefault();
         const searchByState = document.getElementById('select-state');
         const state = searchByState.value;
-      
+
         getByState(state);
+        listenToSearhByCity();
     });
 
 }
@@ -134,14 +140,14 @@ function listenToFilterType() {
 
     filterByType.addEventListener("change", function (event) {
         const type = event.target.value;
-       
-        const filter = state.filter(function (element) {
+
+        const filtered_by_type = originalState.filter(function (element) {
             if (element.brewery_type === type) {
                 return element;
             }
         });
-        
-        setStateByType(filter);
+
+        setState(filtered_by_type);
 
     });
 }
@@ -198,6 +204,67 @@ function createListOfBrewery(state) {
         a.innerHTML = 'Visit Website';
 
         sectionLink.appendChild(a);
+    });
+
+}
+function listenToSearhByBrewriesName() {
+    const filterByName = document.getElementById('search-breweries');
+    filterByName.addEventListener('click', function (event) {
+        console.log('listenToSearhByBrewriesName ', event.target.value);
+        const name = event.target.value;
+        if (name === '') {
+            setState(originalState);
+        }
+        const nameEnd = name.length;
+        const filtered_by_name = state.filter(function (item) {
+
+            if (item.name.slice(0, nameEnd) === name) {
+                return item;
+            }
+        });
+        setState(filtered_by_name);
+
+    })
+}
+function listenToSearhByCity() {
+    const filtered_by_city = originalState.map(function (item) {
+        return item.city
+    });
+    console.log('filter', filtered_by_city);
+    filtered_by_city.forEach(function (name) {
+        createCityElement(name)
+    });
+
+    listenToClearAllCity();
+}
+function createCityElement(name) {
+    const cityForm = document.getElementById('filter-by-city-form');
+    /*
+    <input type="checkbox" name="cincinnati" value="cincinnati" />
+    <label for="cincinnati">Cincinnati</label>*/
+    const input = document.createElement('input');
+    input.setAttribute('type', 'checkbox');
+    input.setAttribute('name', name);
+    input.setAttribute('value', name);
+    cityForm.appendChild(input);
+
+    const label = document.createElement('label');
+    label.setAttribute('for', name);
+    label.innerHTML = name;
+    cityForm.appendChild(label);
+
+
+}
+function listenToClearAllCity() {
+    //clear-all-btn
+    const clearAllCity = document.getElementById('clear-all-city');
+
+    clearAllCity.addEventListener('click', function (event) {
+        console.log(' clearAllCity event', event);
+        const checkboxs = document.getElementById('filter-by-city-form').getElementsByTagName("input");
+        for (const checkbox of checkboxs) {
+            checkbox.checked = false;
+        }
     });
 
 }
