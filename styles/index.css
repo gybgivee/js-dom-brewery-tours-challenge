@@ -42,7 +42,14 @@ body {
   border-radius: 0.25rem;
 }
 
-
+#select-state{
+margin-right: -2rem;
+ 
+}
+#autocompete-state option{
+  display: grid;
+  grid-auto-flow: row;
+}
 
 main {
   display: grid;
@@ -235,3 +242,5 @@ article {
   text-decoration: none;
   font-weight: bold;
 }
+
+
