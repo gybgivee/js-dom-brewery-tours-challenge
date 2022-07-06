@@ -3,7 +3,8 @@ const filterByType = document.getElementById('filter-by-type');
 //https://api.openbrewerydb.org/breweries?by_state=new_york&per_page=3;
 let state = [];
 let originalState = [];
-
+let cityState = [];
+let visitState = []
 
 const brewType = ['micro', 'regional', 'brewpub'];
 function clearState() {
@@ -11,32 +12,89 @@ function clearState() {
 }
 function setState(updatedState) {
     state = updatedState;
-    // Object.keys(updatedState).forEach((prop) => {
-    //     state[prop] = updatedState[prop];
-    //   });
+
     createListOfBrewery(state);
     rander();
 }
+
 function setOriginalState(updatedState) {
     originalState = updatedState;
     console.log('originalState', originalState);
     createListOfBrewery(originalState);
     rander();
 }
+function setCityState(updatedState) {
+    cityState.push(...updatedState);
+    console.log('cityState', cityState);
+    createListOfBrewery(cityState);
+    rander();
+
+}
+function setvisitState(item) {
+    const match = visitState.some(element => element.name === item.name);
+    console.log('match', match);
+    if (!match) {
+        visitState.push(item)
+    }
+    createListOfvisit(visitState)
+    //createListOfBrewery(state);
+    rander();
+
+}
+function updateVisitState(updateState) {
+    visitState = updateState;
+    createListOfvisit(visitState)
+    //createListOfBrewery(state);
+    rander();
+
+}
+function createListOfvisit(visitState) {
+    const visit = document.getElementById('visit');
+    visit.innerHTML ="";
+    const h3 = document.createElement('h3');
+    h3.innerHTML = "My Favourite Breweries";
+    h3.setAttribute('id', 'visit-heading');
+    visit.appendChild(h3);
+    const ulEl = document.createElement('ul');
+    ulEl.setAttribute('id', 'visit-list');
+    visit.appendChild(ulEl);
+    visitState.forEach(item => {
+        const name = item.name.split(' ');
+        const div = document.createElement('div');
+        div.setAttribute('class', 'wrap');
+        ulEl.appendChild(div);
+
+        const li_link = document.createElement('a');
+        li_link.setAttribute('href', item.website_url);
+        li_link.innerHTML = name[0] + ' ' + name[1];
+        div.appendChild(li_link);
+
+        const li_remove = document.createElement('a');
+        li_remove.setAttribute('id','remove-'+item.id);
+        li_remove.style.color = 'red';
+        li_remove.innerHTML = 'Remove';
+        div.appendChild(li_remove);
+        listenToRemoveVisit(li_remove);
+
+
+    });
+    //visit-list
+
+
+}
 
 function rander() {
     listenToSearhByState();
     listenToselectOnSuggestState();
     listenToSubmitState();
-    listenToFilterType();
+    listenToFilterByType();
     listenToSearhByBrewriesName();
 
 }
 function getByState(state) {
-
+    //https://api.openbrewerydb.org/breweries?page=15&per_page=3
     console.log('getByState', state);
-    //`hello world, My name is ${isBold ? '<b>Kitty Coder</b>' : 'Kitty Coder'}`;
-    fetch(`https://api.openbrewerydb.org/breweries?by_state=${state}`)
+    fetch(`https://api.openbrewerydb.org/breweries?by_state=${state}&per_page=20`)
         .then(function (response) {
             //console.log('get response', response);
             return response.json();
@@ -54,12 +112,13 @@ function getByState(state) {
         });
 }
 function getAllStates() {
-    fetch(`https://api.openbrewerydb.org/breweries?by_state`)
+    fetch(`https://api.openbrewerydb.org/breweries?&per_page=50`)
         .then(function (response) {
             //console.log('get response', response);
             return response.json();
         })
         .then(function (data) {
+            console.log('date length', data.length);
             const filterByType = data.filter(function (item) {
                 if (brewType.includes(item.brewery_type)) {
                     return item;
@@ -67,6 +126,7 @@ function getAllStates() {
             })
             setState(filterByType);
             setOriginalState(filterByType);
+
 
         });
 }
@@ -96,8 +156,8 @@ function listenToSearhByState() {
             }
         });
 
-        const newSuggest = [...new Set(suggestList)]
-        newSuggest.forEach(function (term) {
+        const removeDuplicate = [...new Set(suggestList)]
+        removeDuplicate.forEach(function (term) {
             const option = document.createElement('option');
             option.innerHTML = term;
             //console.log('term: ' + term);
@@ -135,7 +195,7 @@ function listenToSubmitState() {
     });
 
 }
-function listenToFilterType() {
+function listenToFilterByType() {
     const filterByType = document.getElementById("filter-by-type");
 
     filterByType.addEventListener("change", function (event) {
@@ -151,7 +211,39 @@ function listenToFilterType() {
 
     });
 }
+function listenToFilterByCity(filterByCity) {
+    filterByCity.addEventListener("change", function (event) {
+        const city = event.target.value;
+        const filtered_by_city = originalState.filter(function (element) {
 
+            if (element.city === city) {
+                console.log('element city: ' + element.city);
+                return element;
+            }
+        });
+        console.log('filtered_by_city', filtered_by_city);
+        setCityState(filtered_by_city);
+    });
+
+}
+function listenToaddToVisit(addToVisit) {
+    addToVisit.addEventListener("click", function (event) {
+        const id = event.target.id;
+        const info = state.find(element => element.id === id);
+        setvisitState(info);
+    });
+
+
+}
+function listenToRemoveVisit(remove){
+    remove.addEventListener("click", function (event) {
+        const id = event.target.id;
+        const removeId = id.replace('remove-', '');
+        const updateState = visitState.filter(element => element.id !== removeId);
+        updateVisitState(updateState);
+    });
+
+}
 function createListOfBrewery(state) {
     console.log('State in listOfBrewery: ', state);
     const ulEl = document.getElementById("breweries-list");
@@ -196,14 +288,25 @@ function createListOfBrewery(state) {
         p_phone.innerHTML = item.phone;
         sectionAddress.appendChild(p_phone);
 
+        const addToVisit = document.createElement("a");
+        addToVisit.setAttribute("href", "#");
+        addToVisit.setAttribute("id", item.id);
+        addToVisit.setAttribute("class", "save-like");
+        addToVisit.innerHTML = 'Add to visit';
+        li.appendChild(addToVisit);
+        listenToaddToVisit(addToVisit);
+
         const sectionLink = document.createElement("section");
         sectionLink.setAttribute("class", "link");
         li.appendChild(sectionLink);
         const a = document.createElement("a");
         a.setAttribute("href", item.website_url);
         a.innerHTML = 'Visit Website';
-
         sectionLink.appendChild(a);
+
+
+
+
     });
 
 }
@@ -227,26 +330,29 @@ function listenToSearhByBrewriesName() {
     })
 }
 function listenToSearhByCity() {
+    const cityForm = document.getElementById('filter-by-city-form');
+    cityForm.innerHTML = "";
     const filtered_by_city = originalState.map(function (item) {
         return item.city
     });
-    console.log('filter', filtered_by_city);
+
     filtered_by_city.forEach(function (name) {
         createCityElement(name)
     });
+
 
     listenToClearAllCity();
 }
 function createCityElement(name) {
     const cityForm = document.getElementById('filter-by-city-form');
-    /*
-    <input type="checkbox" name="cincinnati" value="cincinnati" />
-    <label for="cincinnati">Cincinnati</label>*/
+
     const input = document.createElement('input');
     input.setAttribute('type', 'checkbox');
     input.setAttribute('name', name);
+    input.setAttribute('id', name);
     input.setAttribute('value', name);
     cityForm.appendChild(input);
+    listenToFilterByCity(input);
 
     const label = document.createElement('label');
     label.setAttribute('for', name);
@@ -268,6 +374,8 @@ function listenToClearAllCity() {
     });
 
 }
+
+
 function init() {
     getAllStates();
 }

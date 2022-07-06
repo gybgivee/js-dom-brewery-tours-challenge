@@ -99,6 +99,7 @@ main {
   font-size: 0.725rem;
 }
 
+
 #filter-by-type-form {
   padding: 1rem;
 
@@ -173,7 +174,7 @@ article {
   grid-template-areas:
     "heading heading type"
     "address phone ."
-    ". . link";
+    "save-link . link";
   grid-template-columns: repeat(2, 1fr) minmax(140px, auto);
   grid-template-rows: repeat(3, auto);
 
@@ -243,4 +244,35 @@ article {
   font-weight: bold;
 }
 
+.save-like{
+ width: fit-content;
+  grid-area: save-link;
+  display: block;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.25rem;
+  background-color: #e30f80;
+  color: #fff;
 
+  text-transform: uppercase;
+  text-align: center;
+  text-decoration: none;
+  font-weight: bold;
+}
+#visit{
+  margin-top: 3rem;
+  border: black dashed 2px;
+}
+.wrap{
+  display: flex;
+  gap: 3rem;
+  align-items: center;
+}
+
+#visit-heading{
+  padding-top: 2rem;
+  text-align: center;
+}
+#visit-list {
+  margin-left: -2rem;
+  list-style: none;
+}
