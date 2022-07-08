@@ -276,3 +276,15 @@ article {
   margin-left: -2rem;
   list-style: none;
 }
+#next_page{
+display: flex;
+gap: 1rem;
+justify-content: right;
+}
+#next,#back{
+  background-color: #fbc02d;
+
+  width:max-content;
+  padding: 1.5rem;
+  border-style: none;
+}
